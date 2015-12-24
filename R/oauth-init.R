@@ -18,7 +18,7 @@ init_oauth1.0 <- function(endpoint, app, permission = NULL,
   }
 
   # 1. Get an unauthorized request token
-  response <- GET(endpoint$request, oauth_sig(endpoint$request, "GET"))
+  response <- POST(endpoint$request, oauth_sig(endpoint$request, "POST"))
   stop_for_status(response)
   params <- content(response, type = "application/x-www-form-urlencoded")
   token <- params$oauth_token
