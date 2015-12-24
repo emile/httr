@@ -19,6 +19,8 @@ provide a consistent way of storing secrets in environment variables.}
 
   Use \code{NULL} to not store a secret: this is useful if you're relying on
   cached OAuth tokens.}
+
+\item{sig_method}{"HMAC-SHA1" or "RSA-SHA1" signature method}
 }
 \description{
 The OAuth framework doesn't match perfectly to use from R. Each user of the

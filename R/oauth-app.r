@@ -15,6 +15,7 @@
 #'
 #'   Use \code{NULL} to not store a secret: this is useful if you're relying on
 #'   cached OAuth tokens.
+#' @param sig_method "HMAC-SHA1" or "RSA-SHA1" signature method
 #' @export
 #' @family OAuth
 #' @examples
@@ -28,7 +29,7 @@
 #' # suppress the warning message
 #' oauth_app("my_app", "mykey")
 #' oauth_app("my_app", "mykey", NULL)
-oauth_app <- function(appname, key, secret = NULL) {
+oauth_app <- function(appname, key, secret = NULL, sig_method = "HMAC-SHA1") {
   if (missing(secret)) {
     env_name <- paste0(toupper(appname), "_CONSUMER_SECRET")
     secret <- Sys.getenv(env_name)
@@ -40,8 +41,8 @@ oauth_app <- function(appname, key, secret = NULL) {
       message("Using secret stored in environment variable ", env_name)
     }
   }
-  structure(list(appname = appname, secret = secret, key = key),
-    class = "oauth_app")
+  structure(list(appname = appname, secret = secret, key = key,
+    sig_method = sig_method), class = "oauth_app")
 }
 
 is.oauth_app <- function(x) inherits(x, "oauth_app")
@@ -49,7 +50,22 @@ is.oauth_app <- function(x) inherits(x, "oauth_app")
 #' @export
 print.oauth_app <- function(x, ...) {
   cat("<oauth_app> ", x$appname, "\n", sep = "")
-  cat("  key:    ", x$key, "\n", sep = "")
-  secret <- if (is.null(x$secret)) "<not supplied>" else "<hidden>"
-  cat("  secret: ", secret, "\n", sep = "")
+  cat(" key: ", x$key, "\n", sep = "")
+  cat(" signature method: ", x$sig_method, "\n", sep = "")
+
+  switch(x$sig_method,
+    "RSA-SHA1" = {
+      if (is_rsa_key(x$secret)) {
+        cat(" secret:\n");
+        print(x$secret)
+      } else if (is.character(x$secret) && file.exists(x$secret)) {
+        cat(" secret (RSA key file): ", x$secret, "\n", sep = "")
+      }
+    },
+    "HMAC-SHA1" = {
+      secret <- ifelse(is.null(x$secret), "<not supplied>", "<hidden>")
+      cat(" secret: ", secret, "\n", sep = "")
+    }
+  )
+
 }

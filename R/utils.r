@@ -84,3 +84,8 @@ find_cert_bundle <- function() {
   # Fall back to certificate bundle in openssl
   system.file("cacert.pem", package = "openssl")
 }
+
+is_rsa_key <- function(key) {
+  key_class <- class(key)
+  "rsa" %in% key_class && "key" %in% key_class
+}
